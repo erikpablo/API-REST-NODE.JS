@@ -1,17 +1,16 @@
 import fastify from 'fastify'
+import { knex } from './database'
 
 const app = fastify()
 
 // GET POST PUT DELETE PATCH
-
 //  http://localhost:3333/hello
 
-app.get('/hello', () => {
-  return 'hello world'
-})
+app.get('/hello', async () => {
+  const test = await knex('sqlite_schema').select('*')
 
-// Chamando o servidor para escutar na porta 3333
-// o listen vai retorna um Promise, e por isso usamos o then para da um console.log
+  return test
+})
 
 app
   .listen({
