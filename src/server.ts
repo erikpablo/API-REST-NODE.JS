@@ -1,4 +1,5 @@
 import fastify from 'fastify'
+import crypto from 'node:crypto'
 import { knex } from './database'
 
 const app = fastify()
@@ -7,10 +8,22 @@ const app = fastify()
 //  http://localhost:3333/hello
 
 app.get('/hello', async () => {
-  const test = await knex('sqlite_schema').select('*')
+  const transaction = knex('transaction').where('amount', 1000).select('*')
 
-  return test
+  return transaction
 })
+
+/**
+ * Criamos a const transction
+ * Pegamos nossa tabela criada transaction
+ * e damos um insert({}) para inserir uma nova transicao
+ * Porem, para returna todos os dados usamos o
+ * returning('*') para retorna todos
+ * Para pegar os dados que ja consta
+ * usamos o .select('*')
+ *
+ * e se quisemos filtra usamos o where
+ */
 
 app
   .listen({
