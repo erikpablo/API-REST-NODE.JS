@@ -1,4 +1,4 @@
-import { knex as setupKnex } from 'knex'
+import { knex as setupKnex, Knex } from 'knex'
 
 /**
  * importamos o knex
@@ -15,12 +15,28 @@ import { knex as setupKnex } from 'knex'
  *
  */
 
-export const knex = setupKnex({
+export const config: Knex.Config = {
   client: 'sqlite',
   connection: {
-    filename: './tmp/app.db',
+    filename: './db/app.db',
   },
-})
+  useNullAsDefault: true, // para evitar problemas com campos nulos
+  migrations: {
+    extension: 'ts', // para usar migrations em typescript,
+    directory: './db/migrations', // onde vamos salvar as migrations
+  },
+}
+
+export const knex = setupKnex(config)
+
+/**
+ *  Importamos o Knex
+ * --sendo com o K Maiusculo
+ * --Ele se trona uma interface
+ * --Ou seja, tipamos o knex, definimos o formato
+ * ---Knex.Config
+ */
+
 /**
  * exportamos o knex
  * --para que possamos usar em outros arquivos
