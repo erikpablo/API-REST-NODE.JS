@@ -1,3 +1,7 @@
 {
-  "extends": "@rocketeTseat/eslint-config/node"
+  "extends": "@rocketeTseat/eslint-config/node",
+  "rules": {
+    "camelcase": "off",
+    "no-useless-constructor": "off"
+  }
 }
