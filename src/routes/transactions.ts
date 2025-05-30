@@ -4,6 +4,25 @@ import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 
 export async function transactionsRoutes(app: FastifyInstance) {
+  app.get('/', async () => {
+    const transactions = await knex('transaction').select()
+
+    return { transactions }
+  })
+
+  app.get('/:id', async (request) => {
+    const createFilterTransactionSchema = z.object({
+      id: z.string().uuid(),
+    })
+
+    const { id } = createFilterTransactionSchema.parse(request.params)
+
+    const transaction = await knex('transaction').where('id', id).first()
+    // esperamos que so tenha um trans com esse id, o first diz so temos um resultado
+
+    return { transaction }
+  })
+
   app.post('/', async (request, replay) => {
     const createTransactionsSchema = z.object({
       title: z.string(),
@@ -22,23 +41,3 @@ export async function transactionsRoutes(app: FastifyInstance) {
     return replay.status(201).send()
   })
 }
-
-/**
- * Como todas as rotas teram /transactions
- * Podemos usar uma das config do fastify
- * no register, podemos passar outro parametro
- * (nome da F, {
- *    prefix: 'transactions'
- * })
- *
- * como criamos uma nova trans
- * usamos o post
- * e para consegui os dados, usamos o body
- * e onde conseguimos ele?
- * --no request.body(sempre sera um ob)
- * Porem o body, esta como any e nao gostamos disso
- *
- * Dessa forma com o zod podemos validas os dados e o body ira receber os dados corretos
- *
- * vamos inserir os dados no banco
- */
