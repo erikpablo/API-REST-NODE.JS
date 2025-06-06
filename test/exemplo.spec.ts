@@ -1,53 +1,63 @@
-import { expect, test, beforeAll, afterAll } from 'vitest'
+import { it, beforeAll, afterAll, describe, expect } from 'vitest'
 import request from 'supertest'
 import { app } from '../src/app'
 
-beforeAll(async () => {
-  await app.ready()
-})
+describe('transactions routes', async () => {
+  beforeAll(async () => {
+    await app.ready()
+  })
 
-afterAll(async () => {
-  await app.close()
-})
+  afterAll(async () => {
+    await app.close()
+  })
 
-test('O usuario conseque criar uma nova transação', async () => {
-  await request(app.server)
-    .post('/transactions')
-    .send({
-      title: 'New transaction',
-      amount: 5000,
-      type: 'credit',
-    })
-    .expect(201)
+  // deve ser possivel fazer x coisa
+
+  it('should be able to create a new transaction', async () => {
+    await request(app.server)
+      .post('/transactions')
+      .send({
+        title: 'New transaction',
+        amount: 5000,
+        type: 'credit',
+      })
+      .expect(201)
+  })
+
+  it('should be able to list all transactions', async () => {
+    const createTransactionResponse = await request(app.server)
+      .post('/transactions')
+      .send({
+        title: 'New transaction',
+        amount: 5000,
+        type: 'credit',
+      })
+
+    const cookies = createTransactionResponse.get('Set-Cookie')
+    const listTransactionsResponse = await request(app.server)
+      .get('/transactions')
+      .set('Cookie', cookies ?? [])
+      .expect(200)
+
+    expect(listTransactionsResponse.body.transactions).toEqual([
+      expect.objectContaining({
+        title: 'New transaction', // falamos o seguinte, esperamos que tenha tais dados
+        amount: 5000,
+      }),
+    ])
+  })
 })
 
 /**
- * Podemos usar feramenta para teste
- * Podemos fazer teste sem colocar a aplicação no ar
+ * Podemos usar o .skip, ele ira pular o teste que passamos ele
+ * .todo, usado para lembra de testa mais tarde
+ * .only, ira rodar somente o teste que passamos ele
  *
- * npm i supertest -D
- * tudo para teste é como D
+ * REGRA
+ * -Jamais, escrever um teste que depende de outro teste
  *
- * Separando o app.ts do server
- * dessa forma podemos usar o app sem precisar usar o lister no server
- * app fica config para cria a aplicação e server fica o nosso serve kkk
+ * Dessa forma para pegar o cookie
+ * criamos a transacao dentro da que queremos lista
  *
- * supertest nao suporta o ts, entao usamos o @types/supertest -D
- *
- * --Inicianmdo os testes
- * como nao retorna nada usamos request
- * que seria o supertest, onde ele deve receber o app.serve
- * que seria o serve Http do node
- * onde passamos o metodo post, passando a rota
- * usanso o send para enviar um objeto json com os dados da criacao
- *
- * dessa forma passando para o expect, ziemos que
- * eu quero que meu response.statusCode seja igual a 201
- * podemos usar colado
- *
- * beforeAll
- * diz o seguinte, antes de continua, quero que aguarde o app.ready()
- *
- * afterAll
- * apos finalizar o teste feche aplicação
+ * usamos o set para enivar a solicitacao
  */
