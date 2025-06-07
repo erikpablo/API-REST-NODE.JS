@@ -52,18 +52,66 @@ describe('transactions routes', async () => {
       }),
     ])
   })
-})
 
-/**
- * Podemos usar o .skip, ele ira pular o teste que passamos ele
- * .todo, usado para lembra de testa mais tarde
- * .only, ira rodar somente o teste que passamos ele
- *
- * REGRA
- * -Jamais, escrever um teste que depende de outro teste
- *
- * Dessa forma para pegar o cookie
- * criamos a transacao dentro da que queremos lista
- *
- * usamos o set para enivar a solicitacao
- */
+  it('should be able to to get a specific transaction', async () => {
+    const createTransactionResponse = await request(app.server)
+      .post('/transactions')
+      .send({
+        title: 'New transaction',
+        amount: 5000,
+        type: 'credit',
+      })
+
+    const cookies = createTransactionResponse.get('Set-Cookie')
+    const listTransactionsResponse = await request(app.server)
+      .get('/transactions')
+      .set('Cookie', cookies ?? [])
+      .expect(200)
+
+    const transactionId = listTransactionsResponse.body.transactions[0].id
+
+    const getTransactionsResponse = await request(app.server)
+      .get(`/transactions/${transactionId}`)
+      .set('Cookie', cookies ?? [])
+      .expect(200)
+
+    expect(getTransactionsResponse.body.transaction).toEqual(
+      expect.objectContaining({
+        title: 'New transaction',
+        amount: 5000,
+      })
+    )
+  })
+
+  it('should be able to get the summary', async () => {
+    const createTransactionResponse = await request(app.server)
+      .post('/transactions')
+      .send({
+        title: 'credit transaction',
+        amount: 5000,
+        type: 'credit',
+      })
+
+    const cookies = createTransactionResponse.get('Set-Cookie')
+
+    await request(app.server)
+      .post('/transactions')
+      .set('Cookie', cookies ?? [])
+      .send({
+        title: 'Debit transaction',
+        amount: 2000,
+        type: 'debit',
+      })
+
+    const summaryResponse = await request(app.server)
+      .get('/transactions/summary')
+      .set('Cookie', cookies ?? [])
+      .expect(200)
+
+    console.log(summaryResponse.body.summary)
+
+    expect(summaryResponse.body.summary).toEqual({
+      amount: 3000,
+    })
+  })
+})
