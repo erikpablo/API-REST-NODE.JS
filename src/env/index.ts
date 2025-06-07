@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import { config } from 'dotenv'
 import { z } from 'zod'
 /**
  * Criamos para validas os dados do env
@@ -22,6 +22,12 @@ import { z } from 'zod'
  * usamos o enum([ira rebecer, os dados, kkk])
  */
 
+if (process.env.NODE_ENV === 'test') {
+  config({ path: '.env.test' })
+} else {
+  config()
+}
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
   DATABASE_URL: z.string(),
@@ -37,3 +43,15 @@ if (_env.success === false) {
 }
 
 export const env = _env.data
+
+/**
+ * Passamos agora o import config env
+ *
+ * Pois passando um if
+ * fazemos isso pois é muito ruim que o teste crie algo no banco
+ * Criamos um banco para o teste
+ *
+ * dizemos que caso o process.env.NODE_ENV === test
+ * rodar a config de env de test
+ * porem se nao rodar a config normal que seria o env
+ */
